@@ -1,0 +1,130 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ADD8E6;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+    width: 100%;
+    margin-top: 20px;
+}
+
+h2 {
+    color: #333;
+    text-align: center;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    width: 80%;
+    max-width: 1200px;
+}
+
+.form-container {
+    flex: 1;
+    margin-right: 40px;
+}
+
+#product-list-container {
+    flex: 1;
+}
+
+#product-list {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.product-item {
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Espacio entre el nombre y el botón */
+}
+
+.product-name {
+    flex: 1; /* Hace que el nombre del producto ocupe todo el espacio disponible */
+}
+
+.product-item::before {
+    content: "\2714"; /* Unicode del checkmark */
+    color: green;
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+form {
+    display: flex;
+    align-items: center; /* Alinea los elementos en el centro verticalmente */
+    gap: 10px; /* Espacio entre el campo de entrada y el botón */
+}
+
+label {
+    font-size: 18px; /* Tamaño de fuente de la etiqueta */
+    line-height: 40px; /* Alinea verticalmente el texto de la etiqueta */
+    margin-right: 10px; /* Espacio entre la etiqueta y el campo de entrada */
+}
+
+#postname {
+    height: 40px; /* Altura del campo de entrada igual al botón */
+    font-size: 16px; /* Tamaño del texto en el campo de entrada */
+    padding: 0 10px; /* Espaciado interno */
+    border: 1px solid #ccc; /* Borde del campo de entrada */
+    border-radius: 5px; /* Esquinas redondeadas */
+}
+
+button {
+    background-color: #4CAF50; /* Verde */
+    color: white;
+    border: none;
+    height: 40px; /* Altura del botón igual al campo de entrada */
+    font-size: 16px; /* Tamaño del texto en el botón */
+    cursor: pointer;
+    border-radius: 5px;
+    padding: 0 15px; /* Espaciado interno del botón */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Estilos para el botón de eliminar */
+.delete-button {
+    background-color: #f44336; /* Rojo */
+    margin-left: 10px; /* Espacio entre el nombre del producto y el botón */
+}
+
+.delete-button:hover {
+    background-color: #c62828;
+}
+
+/* Estilos para el popup */
+#postrespmsg {
+    display: none; /* Oculto por defecto */
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
