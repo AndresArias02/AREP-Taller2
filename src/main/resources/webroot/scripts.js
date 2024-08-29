@@ -1,88 +1,93 @@
-import edu.eci.arep.App;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
+// scripts.js
 
-import static org.junit.jupiter.api.Assertions.*;
+// Cargar productos actuales en el carrito
+function loadGetMsg() {
+    fetch('/app/getProducts')
+        .then(response => response.json())
+        .then(data => {
+            const productList = document.getElementById("product-list");
+            productList.innerHTML = ""; // Limpiar la lista antes de agregar nuevos elementos
 
-public class shoppingListTest {
+            if (data.products && data.products.length > 0) {
+                data.products.forEach(product => {
+                    const productItem = document.createElement("div");
+                    productItem.className = "product-item";
 
-    private static final String BASE_URL = "http://localhost:35000/app";
-    private static HttpURLConnection connection = null;
+                    const productText = document.createElement("span");
+                    productText.className = "product-name";
+                    productText.textContent = product;
 
-    @BeforeEach
-    public void setup() throws Exception {
-        // Iniciar el servidor
-        new Thread(() -> {
-            try {
-                // Inicia el servidor en un hilo separado
-                App.main(new String[0]);
-            } catch (Exception e) {
-                e.printStackTrace();
+                    const deleteButton = document.createElement("button");
+                    deleteButton.textContent = "Delete";
+                    deleteButton.className = "delete-button";
+                    deleteButton.onclick = () => deleteProduct(product);
+
+                    productItem.appendChild(productText);
+                    productItem.appendChild(deleteButton);
+                    productList.appendChild(productItem);
+                });
+            } else {
+                productList.innerHTML = "<p>No products in the cart.</p>";
             }
-        }).start();
-        // Esperar un poco para asegurarse de que el servidor esté en funcionamiento
-        try {
-            Thread.sleep(2000); // Espera de 2 segundos
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @AfterEach
-    public void teardown() throws IOException {
-        // No hay un método para detener el servidor, pero podrías implementar uno si es necesario
-    }
-
-    @Test
-    public void testAddProduct() throws Exception {
-        String product = "Apple";
-        URL url = new URL(BASE_URL + "/addProduct?name=" + product);
-        connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-
-        int responseCode = connection.getResponseCode();
-        assertEquals(HttpURLConnection.HTTP_OK, responseCode);
-
-        String response = new String(connection.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertTrue(response.contains("Product added successfully."));
-    }
-
-    @Test
-    public void testGetProducts() throws Exception {
-        URL url = new URL(BASE_URL + "/getProducts");
-        connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Content-Type", "application/json");
-
-        int responseCode = connection.getResponseCode();
-        assertEquals(HttpURLConnection.HTTP_OK, responseCode);
-
-        String response = new String(connection.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertTrue(response.contains("products"));
-    }
-
-    @Test
-    public void testDeleteProduct() throws Exception {
-        String product = "Apple";
-        // Primero agregar el producto para asegurarse de que existe
-        testAddProduct();
-
-        URL url = new URL(BASE_URL + "/deleteProduct?name=" + product);
-        connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("DELETE");
-        connection.setRequestProperty("Content-Type", "application/json");
-
-        int responseCode = connection.getResponseCode();
-        assertEquals(HttpURLConnection.HTTP_OK, responseCode);
-
-        String response = new String(connection.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertTrue(response.contains("Product deleted successfully."));
-    }
+        })
+        .catch(error => {
+            console.error("Error fetching products:", error);
+            document.getElementById("getrespmsg").textContent = "Failed to load products.";
+        });
 }
+
+
+// Agregar producto al carrito
+function loadPostMsg(event) {
+    event.preventDefault(); // Prevenir la recarga de la página
+
+    const name = document.getElementById("postname").value;
+    let url = "/app/addProduct?name=" + encodeURIComponent(name);
+
+    fetch(url, { method: 'POST' })
+        .then(response => response.json()) // Parsear la respuesta como JSON
+        .then(data => {
+            showPopup(data.message); // Mostrar el mensaje en un popup
+            loadGetMsg(); // Recargar la lista de productos después de agregar uno nuevo
+        })
+        .catch(error => {
+            console.error("Error adding product:", error);
+            showPopup("Failed to add product."); // Mostrar error en el popup
+        });
+}
+
+// Función para eliminar un producto
+function deleteProduct(productName) {
+    const url = `/app/deleteProduct?name=${encodeURIComponent(productName)}`;
+
+    fetch(url, { method: 'DELETE' })
+        .then(response => response.json())
+        .then(data => {
+            showPopup(data.message); // Mostrar el mensaje en un popup
+            loadGetMsg(); // Recargar la lista de productos después de eliminar uno
+        })
+        .catch(error => {
+            console.error("Error deleting product:", error);
+            showPopup("Failed to delete product."); // Mostrar error en el popup
+        });
+}
+
+
+// Función para mostrar el popup
+function showPopup(message) {
+    const popup = document.getElementById("postrespmsg");
+    popup.textContent = message;
+    popup.style.display = 'block'; // Mostrar el popup
+
+    // Ocultar el popup después de 3 segundos
+    setTimeout(() => {
+        popup.style.display = 'none';
+    }, 3000);
+}
+
+// Asocia el evento de envío del formulario a la función loadPostMsg
+document.getElementById("addProductForm").addEventListener("submit", loadPostMsg);
+
+// Cargar productos al cargar la página
+window.onload = loadGetMsg;
