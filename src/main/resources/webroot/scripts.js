@@ -1,105 +1,88 @@
-// scripts.js
+import edu.eci.arep.App;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-// Cargar productos actuales en el carrito
-function loadGetMsg() {
-    fetch('/app/getProducts')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class shoppingListTest {
+
+    private static final String BASE_URL = "http://localhost:35000/app";
+    private static HttpURLConnection connection = null;
+
+    @BeforeEach
+    public void setup() throws Exception {
+        // Iniciar el servidor
+        new Thread(() -> {
+            try {
+                // Inicia el servidor en un hilo separado
+                App.main(new String[0]);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            return response.json();
-        })
-        .then(data => {
-            const productList = document.getElementById("product-list");
-            productList.innerHTML = ""; // Limpiar la lista antes de agregar nuevos elementos
+        }).start();
+        // Esperar un poco para asegurarse de que el servidor esté en funcionamiento
+        try {
+            Thread.sleep(2000); // Espera de 2 segundos
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
-            if (data.products && data.products.length > 0) {
-                data.products.forEach(product => {
-                    const productItem = document.createElement("div");
-                    productItem.className = "product-item";
+    @AfterEach
+    public void teardown() throws IOException {
+        // No hay un método para detener el servidor, pero podrías implementar uno si es necesario
+    }
 
-                    const productText = document.createElement("span");
-                    productText.className = "product-name";
-                    productText.textContent = product;
+    @Test
+    public void testAddProduct() throws Exception {
+        String product = "Apple";
+        URL url = new URL(BASE_URL + "/addProduct?name=" + product);
+        connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
 
-                    const deleteButton = document.createElement("button");
-                    deleteButton.textContent = "Delete";
-                    deleteButton.className = "delete-button";
-                    deleteButton.onclick = () => deleteProduct(product);
+        int responseCode = connection.getResponseCode();
+        assertEquals(HttpURLConnection.HTTP_OK, responseCode);
 
-                    productItem.appendChild(productText);
-                    productItem.appendChild(deleteButton);
-                    productList.appendChild(productItem);
-                });
-            } else {
-                productList.innerHTML = "<p>No products in the cart.</p>";
-            }
-        })
-        .catch(error => {
-            console.error("Error fetching products:", error);
-            const respMsg = document.getElementById("getrespmsg");
-            if (respMsg) {
-                respMsg.textContent = "Failed to load products.";
-            }
-        });
-}
+        String response = new String(connection.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertTrue(response.contains("Product added successfully."));
+    }
 
-// Agregar producto al carrito
-function loadPostMsg(event) {
-    event.preventDefault(); // Prevenir la recarga de la página
+    @Test
+    public void testGetProducts() throws Exception {
+        URL url = new URL(BASE_URL + "/getProducts");
+        connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Content-Type", "application/json");
 
-    const name = document.getElementById("postname").value;
-    let url = "/app/addProduct?name=" + encodeURIComponent(name);
+        int responseCode = connection.getResponseCode();
+        assertEquals(HttpURLConnection.HTTP_OK, responseCode);
 
-    fetch(url, { method: 'POST' })
-        .then(response => response.json()) // Parsear la respuesta como JSON
-        .then(data => {
-            showPopup(data.message); // Mostrar el mensaje en un popup
-            loadGetMsg(); // Recargar la lista de productos después de agregar uno nuevo
-        })
-        .catch(error => {
-            console.error("Error adding product:", error);
-            showPopup("Failed to add product."); // Mostrar error en el popup
-        });
-}
+        String response = new String(connection.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertTrue(response.contains("products"));
+    }
 
-// Función para eliminar un producto
-function deleteProduct(productName) {
-    const url = `/app/deleteProduct?name=${encodeURIComponent(productName)}`;
+    @Test
+    public void testDeleteProduct() throws Exception {
+        String product = "Apple";
+        // Primero agregar el producto para asegurarse de que existe
+        testAddProduct();
 
-    fetch(url, { method: 'DELETE' })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            showPopup(data.message); // Mostrar el mensaje en un popup
-            loadGetMsg(); // Recargar la lista de productos después de eliminar uno
-        })
-        .catch(error => {
-            console.error("Error deleting product:", error);
-            showPopup("Failed to delete product."); // Mostrar error en el popup
-        });
-}
+        URL url = new URL(BASE_URL + "/deleteProduct?name=" + product);
+        connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("DELETE");
+        connection.setRequestProperty("Content-Type", "application/json");
 
-// Función para mostrar el popup
-function showPopup(message) {
-    const popup = document.getElementById("postrespmsg");
-    if (popup) {
-        popup.textContent = message;
-        popup.style.display = 'block'; // Mostrar el popup
+        int responseCode = connection.getResponseCode();
+        assertEquals(HttpURLConnection.HTTP_OK, responseCode);
 
-        // Ocultar el popup después de 3 segundos
-        setTimeout(() => {
-            popup.style.display = 'none';
-        }, 3000);
+        String response = new String(connection.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertTrue(response.contains("Product deleted successfully."));
     }
 }
-
-// Asocia el evento de envío del formulario a la función loadPostMsg
-document.getElementById("addProductForm").addEventListener("submit", loadPostMsg);
-
-// Cargar productos al cargar la página
-window.onload = loadGetMsg;
