@@ -99,7 +99,7 @@ Para ejecutar las pruebas, ejecute el siguiente comando:
 ```bash
 mvn test
 ```
-![test](https://github.com/user-attachments/assets/931e058a-7642-43a7-9846-aa7c05eaed5c))
+![test](https://github.com/user-attachments/assets/931e058a-7642-43a7-9846-aa7c05eaed5c))\
 
 
 ## verionamiento 
