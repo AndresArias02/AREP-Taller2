@@ -16,7 +16,7 @@ Las siguientes instrucciones le permitirán obtener una copia del proyecto en fu
 
 #### ⚠️ Importante
 
-Es necesario tener instalado Git, Maven y Java 21 para poder ejecutar el proyecto.
+Es necesario tener instalado Git, Maven y Java 17 para poder ejecutar el proyecto.
 
 ## Arquitectura de la Aplicación
 ### Cliente Servidor
@@ -89,7 +89,7 @@ Para instalar y ejecutar esta aplicación, sigue los siguientes pasos:
 
 3. **Abrir la aplicación en un navegador web:**
 
-   Navega a http://localhost:8080/index.html para interactuar con la aplicación.
+   Navega a http://localhost:35000/index.html para interactuar con la aplicación.
 
 ## Ejecutando las pruebas 
 
